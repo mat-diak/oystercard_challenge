@@ -1,66 +1,69 @@
 require 'oystercard'
 
 describe Oystercard do
-    it 'returns 0 balance as default' do 
-        expect(subject.balance).to eq 0
+    
+    # check if Oystercard has all the methods
+    it { is_expected.to respond_to(:top_up).with(1).argument}
+    it { is_expected.to respond_to(:deduct, :touch_out, :touch_in)}
+   
+    let(:card) { Oystercard.new }
+   
+    context 'at start-up'do
+        it 'sets balance to 0' do 
+            expect(card.balance).to eq 0
+        end 
+        it 'not in_journey' do
+            expect(card).not_to be_in_journey
+        end
     end
 
     describe '#top_up' do
-        it 'responds to top up' do
-            expect(subject).to respond_to(:top_up)
-        end
-
-        it 'responds to top up' do
-            expect(subject).to respond_to(:top_up).with(1).argument
-        end
-
-        #previous pair programming:
-        it 'adds 50 value to oystercard' do 
-            expect(subject.top_up(50)).to eq 50
+        it 'adds 5 to balance' do 
+            expect { card.top_up(5) }.to change(card, :balance).by(5)
         end 
 
-        it 'adds any value to oystercard' do
-            amount = rand(100)
-            expect(subject.top_up(amount)).to eq amount
+        it 'adds 90 to balance' do
+            expect(card.top_up(90)).to eq 90
         end 
     end   
     
     describe '#top_up limit' do
-        it 'returns error if balance is above limit' do
-            new_card = Oystercard.new(91)
-            LIMIT = 90
-            expect{new_card.top_up(0)}.to raise_error("Balance cannot exceed £#{LIMIT}.")
-        end 
+        context "when balance is above limit" do
+            it 'returns error' do
+                card.top_up(90)
+                expect{card.top_up(5)}.to raise_error("Balance cannot exceed £#{Oystercard::LIMIT}.")
+            end 
+        end
     end
 
     describe '#deduct' do
-        it 'deducts fare from oystercard' do
-            expect(subject).to respond_to(:deduct)
-        end
 
-        it 'deducts £50 value from oystercard' do 
-            new_card = Oystercard.new(0)
-            expect(subject.deduct(50)).to eq (new_card.balance - 50)
-        end 
+        context "when their is suffecient balance" do
+            it 'deduct £50' do 
+                expect { card.deduct(50) }.to change(card, :balance).by(-50)
+            end 
+        end
     end
 
     describe '#touch_in' do
-        it '#touch_in for oystercard' do 
-            subject.touch_in
-            expect(subject).to be_in_journey
-        end 
+        context 'when the balance is at least 1' do
+            it 'changes in journey to true' do 
+                card.top_up(1)
+                card.touch_in
+                expect(card).to be_in_journey
+            end 
+        end
+        context 'when balance is 0' do
+            it 'throws an error' do
+                expect { card.touch_in }.to raise_error "Insufficient balance."
+            end
+        end
     end 
 
     describe '#touch_out' do
-        it '#touch_out for oystercard' do 
-            expect(subject).to respond_to(:touch_out)
+        it 'changes in_journey to false' do 
+            card.touch_out
+            expect(card).not_to be_in_journey
         end 
     end 
-  
-    describe '#in_journey' do
-        it 'is initially not in a journey' do
-            expect(subject).not_to be_in_journey
-        end
-    end 
-    
 end
