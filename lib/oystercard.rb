@@ -1,35 +1,40 @@
 class Oystercard
-    attr_reader :balance, :journey_status, :entry_station
+    attr_reader :balance, :journey_status, :entry_station, :exit_station, :journey_history
 
     LIMIT = 90
     MINIMUM_FARE = 1
-    def initialize(balance = 0)
+    DEFAULT_BALANCE = 0
+
+    def initialize(balance = DEFAULT_BALANCE)
         @balance = balance
-        @journey_status = false
         @entry_station = nil
+        @journey_history = {}
+        # @journey_history_list = {}
+
     end
 
     def top_up(amount)
         (@balance + amount) > LIMIT ? fail("Balance cannot exceed £#{LIMIT}.") : @balance += amount
     end 
 
-    
     def touch_in(station)
         raise "Insufficient balance." unless @balance >= MINIMUM_FARE
         @entry_station = station
+        @journey_history.store(:entry_st, station)
     end 
     
-    def touch_out
+    def touch_out(station)
         deduct(MINIMUM_FARE)
-        @journey_status = false
+        @exit_station = station
+        @journey_history.store(:exit_st, station)
+        # @journey_history_list[journey_counter + 1] = @journey_history
         @entry_station = nil
     end
     
     def in_journey?
-        @journey_status
-        # if entry_station != then we are in journey!
+        return true unless @entry_station == nil
+        false
     end 
-    
 
     private
     
@@ -38,13 +43,3 @@ class Oystercard
     end
 
 end
-
-# GOAL - we wanna save the entry station
-# Where doo we get the station? "station"
-# Where do we store the station? @entry_station
-# at touch_in set @entry_station to "station"
-# at touch_out set @entry_station to nil
-# What is our double?
-
-# Goal - refactor in_journey 
-# in_journey relies on entry station

@@ -2,14 +2,14 @@ require 'oystercard'
 
 describe Oystercard do
     
-    
-    # check if Oystercard has all the methods
-    it { is_expected.to respond_to(:top_up).with(1).argument}
-    it { is_expected.to respond_to(:touch_out, :touch_in, :entry_station, :balance)}
-    it { is_expected.not_to respond_to(:deduct) }
-    
-    let(:card) { Oystercard.new } # at this stage card does not exist it only saves a block to execute when card is called
-    let(:station) { double() } #creaing a station 
+    describe 'methods' do
+        it { is_expected.to respond_to(:top_up).with(1).argument}
+        it { is_expected.to respond_to(:touch_out, :touch_in, :entry_station, :balance)}
+        it { is_expected.not_to respond_to(:deduct) }
+    end
+
+    let(:card) { Oystercard.new } 
+    let(:station) { double(:station) }
    
     context 'at start-up'do
         it 'sets balance to 0' do 
@@ -17,6 +17,9 @@ describe Oystercard do
         end 
         it 'not in_journey' do
             expect(card).not_to be_in_journey
+        end
+        it 'has an empty journey history hash' do
+            expect(card.journey_history).to eq ({}) # be_empty 
         end
     end
 
@@ -39,32 +42,25 @@ describe Oystercard do
         end
     end
 
-    # describe '#deduct' do
-
-    #     context "when their is suffecient balance" do
-    #         it 'deduct £50' do 
-    #             expect { card.deduct(50) }.to change(card, :balance).by(-50)
-    #         end 
-    #     end
-    # end
-
     describe '#touch_in' do
         context 'when the balance is at least 1' do
             it 'changes in journey to true' do 
-                #arrange
-                card.top_up(1)
-                #act
+                card.top_up(Oystercard::MINIMUM_FARE)
                 card.touch_in(station)
-                #assert
                 expect(card).to be_in_journey
             end 
             it 'stores the entry station' do
-                #Arrage
                 card.top_up(20)
-                #act
                 card.touch_in(station)
-                #assert
                 expect(card.entry_station).to eq(station)
+            end
+
+            it 'checks if entry_station is added to jounrey_history' do
+                card.top_up(1)
+                card.touch_in(station)
+                expect(card.journey_history).to include ({
+                    entry_st: station,
+                })
             end
 
         end
@@ -77,38 +73,76 @@ describe Oystercard do
 
     describe '#touch_out' do
         it 'changes in_journey to false' do 
-            card.touch_out
+            card.touch_out(station)
             expect(card).not_to be_in_journey
         end 
 
         it 'sets entry_station to nil' do
-            #Arrange
             card.top_up(20)
-            #act
             card.touch_in(station)
-            card.touch_out
-            #assert
+            card.touch_out(station)
             expect(card.entry_station).to eq nil
         end
 
         it 'deducts minimum fare' do
-            #Arrange
-            # create a scenario
             card.top_up(1)
             card.touch_in(station)
-            #Assert (here act is card.touch_in)
-            expect { card.touch_out }.to change(card, :balance).by(-Oystercard::MINIMUM_FARE )
+            expect { card.touch_out(station) }.to change(card, :balance).by(-Oystercard::MINIMUM_FARE )
+        end
+
+        it 'stores the exit station' do
+            card.top_up(20)
+            card.touch_in(station)
+            card.touch_out(station)
+            expect(card.exit_station).to eq(station)
+        end
+
+        it 'checks if exit_station is added to jounrey_history' do
+            card.top_up(1)
+            card.touch_in(station)
+            card.touch_out(station)
+            expect(card.journey_history).to include ({
+                entry_st: station,
+                exit_st: station
+            })
         end
     end 
 
     describe '#in_journey?' do
-        # when @entry_station isn't nil, we want @journey_status to be true
-        # arrange
-        # we want touch_in(station) to alter journey_status
-
-        #act
-
-        #assert
+        context 'when entry station is nil' do
+            it 'is false' do
+                expect(card.in_journey?).to be false
+            end
+        end
+        context 'when entry station is not nil' do
+            it 'is true' do
+                card.top_up(10)
+                card.touch_in(station)
+                expect(card.in_journey?).to be true
+            end
+        end
     end
+    
+    # let(:journey) { 
+    #     card.top_up(1)
+    #     card.touch_in(station)
+    #     card.touch_out(station) 
+    # }
+
+    # describe '#journey_history_list' do
+    #     it 'add journey to journey_history'
+    #     2.times { journey }
+    #     expect(card.journey_history_list).to eq ({
+    #         1 => [station, station],
+    #         2 => [station, station]
+    #     })
+    # end
 end
 
+
+
+
+# I wanna see journey history
+
+# Journey_history array [[entry, exit], [entry, exit]]
+# 0 [], 1 []
