@@ -1,21 +1,17 @@
 class Journey 
-  attr_reader :history
+  attr_reader :log
 
+  #we want to store the beginning station at creation of
   def initialize
-    @history = {}
+    @log = {}
   end
-
-  def in_journey?
-    return true unless @entry_station == nil
-    false
-  end 
 
   def begin_at(station)
     @entry_station = station
-    @history.store(:from, station)
+    @log.store(:from, station)
   end
 
   def finish_at(station)
-    @history.store(:to, station)
+    @log.store(:to, station)
   end
 end
