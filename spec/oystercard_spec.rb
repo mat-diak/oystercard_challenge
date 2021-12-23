@@ -60,13 +60,14 @@ describe Oystercard do
     #     expect(card.entry_station).to eq(station)
     #   end
 
-      it 'checks if entry_station is added to jounrey_history' do
-        card.top_up(1)
-        card.touch_in(station)
-        expect(card.journey_history).to include ({
-          entry_st: station,
-        })
-      end
+		# unnecessary?
+      # it 'checks if entry_station is added to jounrey_history' do
+      #   card.top_up(1)
+      #   card.touch_in(station)
+      #   expect(card.journey_history).to include ({
+      #     entry_st: station,
+      #   })
+      # end
 
     end
     context 'when balance is 0' do
@@ -77,14 +78,15 @@ describe Oystercard do
   end 
 
   describe '#touch_out' do
-    let(:complete_journey) {
+    
+		let(:complete_journey) {
 				card.top_up(20)
       	card.touch_in(entry_station)
       	card.touch_out(exit_station)
 			}
 		
 		it 'changes in_journey to false' do 
-      card.touch_out(station)
+      complete_journey
       expect(card).not_to be_in_journey
     end 
 

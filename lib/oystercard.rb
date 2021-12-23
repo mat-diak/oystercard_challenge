@@ -11,10 +11,6 @@ class Oystercard
     def initialize(balance = DEFAULT_BALANCE)
         @balance = balance
         @past_journeys = []
-        
-        # @entry_station = nil
-        # @journey_history = {}
-        # @journey_history_list = {}
     end
 
     def top_up(amount)
@@ -25,8 +21,6 @@ class Oystercard
         raise "Insufficient balance." unless @balance >= MINIMUM_FARE
         @current_journey = Journey.new
         @current_journey.begin_at(station)
-        # @entry_station = station
-        # @journey_history.store(:entry_st, station)
     end 
     
     def touch_out(station)
@@ -34,10 +28,6 @@ class Oystercard
         @current_journey.finish_at(station)
         @past_journeys << @current_journey.log
         @current_journey = nil
-        # @exit_station = station
-        # @journey_history.store(:exit_st, station)
-        # # @journey_history_list[journey_counter + 1] = @journey_history
-        # @entry_station = nil
     end
     
     def in_journey?
